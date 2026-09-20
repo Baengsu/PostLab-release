@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PostLab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="sidepanel-v2.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">PL</span>
+          <div class="brand-text">
+            <strong class="brand-name">PostLab</strong>
+            <span class="brand-sub">ops console</span>
+          </div>
+        </div>
+        <div class="brand-actions">
+          <button id="decord-open-table-btn" type="button" class="btn-soft" title="DECORD 경기 표">
+            경기 표
+          </button>
+          <span id="decord-count" class="badge" title="저장된 경기 수">0</span>
+        </div>
+      </header>
+
+      <section class="sync-strip" aria-label="서버 시간">
+        <div class="clock-row">
+          <span class="meta-label">Server</span>
+          <span id="time-display" class="time">--:--:-- ---</span>
+          <span id="rtt-value" class="badge mono">RTT —</span>
+        </div>
+        <div class="sync-controls">
+          <input
+            id="url-input"
+            type="url"
+            placeholder="Sync URL · https://www.ticketlink.co.kr"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="start-btn" type="button" class="btn-primary">Start</button>
+          <button id="stop-btn" type="button" class="ghost" disabled>Stop</button>
+        </div>
+        <p id="status-text" class="status">URL 입력 후 Start</p>
+      </section>
+
+      <section class="sched-strip" aria-label="예약 Rec">
+        <div class="section-label-row">
+          <span class="meta-label">예약 Rec</span>
+          <span id="sched-rec-state" class="badge">Idle</span>
+        </div>
+        <div class="sched-rec-row">
+          <label class="sched-field" title="시">
+            <span>hh</span>
+            <input id="sched-hh" type="number" min="0" max="23" step="1" value="11" />
+          </label>
+          <label class="sched-field" title="분">
+            <span>mm</span>
+            <input id="sched-mm" type="number" min="0" max="59" step="1" value="0" />
+          </label>
+          <label class="sched-field" title="초">
+            <span>ss</span>
+            <input id="sched-ss" type="number" min="0" max="59" step="1" value="0" />
+          </label>
+          <label class="sched-field" title="밀리초">
+            <span>ms</span>
+            <input id="sched-ms" type="number" min="0" max="999" step="1" value="0" />
+          </label>
+          <select id="sched-rec-site" title="예약 시 어느 Rec를 켤지">
+            <option value="www">기본</option>
+            <option value="facility">구단</option>
+          </select>
+          <button id="sched-rec-arm-btn" type="button" class="btn-accent">예약</button>
+          <button id="sched-rec-clear-btn" type="button" class="ghost compact">해제</button>
+        </div>
+        <p id="sched-rec-status" class="status">시작 후 시각 입력 → 예약 (서버 시각 기준)</p>
+      </section>
+
+      <nav class="seg-tabs" role="tablist" aria-label="작업 영역">
+        <button type="button" class="seg-tab is-active" role="tab" aria-selected="true" data-tab="www">
+          기본
+          <span id="auto-rec-state" class="badge sm">Idle</span>
+        </button>
+        <button type="button" class="seg-tab" role="tab" aria-selected="false" data-tab="facility">
+          구단
+          <span id="fac-rec-state" class="badge sm">Idle</span>
+        </button>
+        <button type="button" class="seg-tab" role="tab" aria-selected="false" data-tab="decord">
+          DECORD
+        </button>
+      </nav>
+
+      <main class="panel-scroll" id="panel-scroll">
+        <section class="tab-panel is-active" data-panel="www" role="tabpanel">
+          <div class="block-body">
+            <div class="field-grid g-url-idx-txt">
+              <input id="auto-url" type="text" placeholder="이동 URL (비우면 현재 탭)" />
+              <input id="auto-index" type="number" placeholder="순서" value="1" title="리스트 번호(li)" />
+              <input id="auto-text" type="text" placeholder="버튼 텍스트" value="예매하기" />
+            </div>
+            <div class="field-grid g-mid-delay">
+              <input id="mid-selector" type="text" placeholder="1.5단계 선택자" value="div.modal_notice" />
+              <input id="modal-delay" type="number" placeholder="ms" value="0" min="0" step="50" />
+            </div>
+            <div class="field-grid g-modal-rec">
+              <input id="modal-selector" type="text" placeholder="2단계 선택자" value="button.common_modal_close" />
+              <input id="modal-text" type="text" placeholder="팝업 텍스트" value="확인" />
+              <button id="auto-click-btn" type="button" class="record">● Rec</button>
+            </div>
+            <p id="auto-status" class="status">기본 · 예매하기 감시</p>
+
+            <div class="subblock">
+              <div class="section-label-row">
+                <span class="meta-label">오픈예정 → 예매하기</span>
+                <span id="exp-activate-state" class="badge sm">—</span>
+              </div>
+              <div class="field-grid g-scan">
+                <select id="exp-btn-pick" title="버튼 목록에서 바꿀 번호 선택">
+                  <option value="">버튼목록 스캔 후 선택</option>
+                </select>
+                <button id="exp-btn-scan-btn" type="button" class="ghost compact">목록</button>
+              </div>
+              <div class="field-grid g-ids">
+                <input id="exp-upgrade-product-id" type="text" placeholder="productId" />
+                <input id="exp-upgrade-schedule-id" type="text" placeholder="scheduleId" />
+              </div>
+              <div class="btn-row">
+                <button id="exp-activate-btn" type="button" class="btn-accent">예매하기로 교체</button>
+                <button id="exp-activate-clear-btn" type="button" class="ghost compact">해제</button>
+              </div>
+              <p id="exp-activate-status" class="status">목록 → 선택 → ID → 교체</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-panel="facility" role="tabpanel" hidden>
+          <div class="block-body">
+            <div class="field-grid g-url-idx-txt">
+              <input id="fac-auto-url" type="text" placeholder="구단 URL (facility.ticketlink…)" />
+              <input id="fac-auto-index" type="number" placeholder="행" value="1" title="테이블 행 번호(tr)" />
+              <input id="fac-auto-text" type="text" placeholder="버튼 텍스트" value="예매하기" />
+            </div>
+            <div class="field-grid g-mid-delay">
+              <input id="fac-mid-selector" type="text" placeholder="중간(공지) 선택자" value="div.ly_btn_area" />
+              <input id="fac-modal-delay" type="number" placeholder="ms" value="0" min="0" step="50" />
+            </div>
+            <div class="field-grid g-modal-rec">
+              <input
+                id="fac-modal-selector"
+                type="text"
+                placeholder="확인 버튼"
+                value="button#noticeModalClose.btn.btn_blank"
+              />
+              <input id="fac-modal-text" type="text" placeholder="팝업 텍스트" value="" />
+              <button id="fac-auto-click-btn" type="button" class="record">● 구단Rec</button>
+            </div>
+            <p id="fac-auto-status" class="status">facility · btn_reserve</p>
+
+            <div class="subblock">
+              <div class="section-label-row">
+                <span class="meta-label">오픈예정 → 예매하기</span>
+                <span id="fac-activate-state" class="badge sm">—</span>
+              </div>
+              <div class="field-grid g-scan">
+                <select id="fac-btn-pick" title="구단 테이블 행 선택">
+                  <option value="">구단 목록 스캔 후 선택</option>
+                </select>
+                <button id="fac-btn-scan-btn" type="button" class="ghost compact">목록</button>
+              </div>
+              <div class="field-grid g-ids">
+                <input id="fac-upgrade-product-id" type="text" placeholder="productId" />
+                <input id="fac-upgrade-schedule-id" type="text" placeholder="scheduleId" />
+              </div>
+              <div class="btn-row">
+                <button id="fac-activate-btn" type="button" class="btn-accent">예매하기로 교체</button>
+                <button id="fac-activate-clear-btn" type="button" class="ghost compact">해제</button>
+              </div>
+              <p id="fac-activate-status" class="status">목록 → 행 선택 → ID → 교체</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-panel="decord" role="tabpanel" hidden>
+          <div class="block-body">
+            <label class="meta-label" for="decord-body">Response Body</label>
+            <textarea
+              id="decord-body"
+              rows="5"
+              placeholder="인코딩된 Body 붙여넣기"
+              spellcheck="false"
+            ></textarea>
+            <div class="btn-row">
+              <button id="decord-decode-btn" type="button" class="btn-accent">디코딩 후 추가</button>
+              <button id="decord-clear-btn" type="button" class="ghost compact">입력 지우기</button>
+            </div>
+            <p id="decord-status" class="status">디코딩 후 상단 [경기 표]에서 확인 · 중복 SID 스킵</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="progress-log-wrap" id="progress-log-wrap">
+        <button
+          type="button"
+          class="progress-log-tab"
+          id="progress-log-toggle"
+          aria-expanded="false"
+          aria-controls="progress-log-body"
+        >
+          <span class="progress-log-tab-label">
+            <span class="progress-chevron" aria-hidden="true"></span>
+            Progress
+          </span>
+          <span id="progress-log-count" class="progress-log-count">0</span>
+        </button>
+        <div class="progress-log-body" id="progress-log-body" hidden>
+          <div class="progress-log-actions">
+            <button id="copy-progress-btn" type="button" class="ghost compact">전체 복사</button>
+            <button id="clear-progress-btn" type="button" class="ghost compact">Clear</button>
+          </div>
+          <div id="progress-log" class="progress-log" aria-live="polite"></div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="sidepanel.js"></script>
+    <script type="module" src="decord/sidepanel-hook.js"></script>
+  </body>
+</html>

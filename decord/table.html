@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DECORD · 경기 표</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="table.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>경기 표</h1>
+        <p>DECORD · 오늘과 가까운 순 · CSV 동기화</p>
+      </div>
+      <div class="today" id="today-label">—</div>
+    </header>
+
+    <section class="panel">
+      <div class="file-bar">
+        <span class="path" id="file-path-label">
+          저장 위치: <strong>아직 없음</strong> — 먼저 위치를 지정하세요
+        </span>
+        <div class="file-actions">
+          <button id="btn-set-path" type="button" class="secondary">저장 위치</button>
+          <button id="btn-load" type="button" class="secondary">불러오기</button>
+          <button id="btn-save-now" type="button" class="primary-outline">지금 저장</button>
+        </div>
+      </div>
+      <p class="hint-line">
+        파일명 고정 <code>decord_schedules.csv</code> · 위치가 연결되면 삭제/추가 시 자동 덮어쓰기
+      </p>
+
+      <div class="toolbar">
+        <span id="count-label" class="muted">0경기</span>
+        <div class="actions">
+          <button id="btn-clear-table" type="button" class="ghost">비우기</button>
+          <button id="btn-refresh" type="button" class="ghost">새로고침</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>홈</th>
+              <th>원정</th>
+              <th>예매</th>
+              <th>경기</th>
+              <th>PID</th>
+              <th>SID</th>
+              <th>기본</th>
+              <th>구단</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr class="empty">
+              <td colspan="9">저장된 경기가 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p id="status" class="status">사이드패널에서 디코딩하면 여기에 반영됩니다.</p>
+    </section>
+
+    <script type="module" src="table.js"></script>
+  </body>
+</html>

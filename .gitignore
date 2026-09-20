@@ -1,0 +1,22 @@
+# never ship full original snapshot
+original-working/
+
+# dependencies / local env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# editor / tooling
+.cursor/
+*.log
+.DS_Store
+Thumbs.db
+
+# generated
+packs/
+
+# OS
+desktop.ini
