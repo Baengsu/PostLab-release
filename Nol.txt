@@ -1,0 +1,54 @@
+(function startScheduledAutoClicker() {
+  const TARGET_STRING = '2026-09-18 20:00:00'; 
+  const TARGET_TIME = new Date(TARGET_STRING.replace(' ', 'T')).getTime();
+  const now = Date.now();
+  const timeToOpen = TARGET_TIME - now;
+  const delayMs = timeToOpen - 2000;
+  console.log(` [${TARGET_STRING}] 오픈까지 남은 시간: ${(timeToOpen / 1000).toFixed(1)}초`);
+  if (delayMs > 0) {
+    console.log(` ${(delayMs / 1000).toFixed(1)}초 대기 후 감지를 시작합니다.`);
+    setTimeout(initObserver, delayMs);
+  } else {
+    initObserver();
+  }
+  function initObserver() {
+    const targetBtn = document.querySelector('div.buttons > button');
+    if (!targetBtn) {
+      console.log(' 버튼 요소를 찾을 수 없어 0.1초 후 재시도합니다.');
+      setTimeout(initObserver, 100);
+      return;
+    }
+    let isClicked = false;
+    const isDisabled = () => targetBtn.hasAttribute('disabled') || targetBtn.classList.contains('_disabled_2p3w6_34');
+    const executeClick = (reason) => {
+      if (isClicked) return;
+      isClicked = true;
+      targetBtn.click();
+      console.log(` [${reason}] 버튼 클릭 성공!`);
+    };
+    if (!isDisabled()) {
+      executeClick('즉시 실행');
+      return;
+    }
+    const observer = new MutationObserver((mutations, obs) => {
+      if (!isDisabled()) {
+        executeClick('감지 완료');
+        obs.disconnect();
+      }
+    });
+    observer.observe(targetBtn, {
+      attributes: true,
+      attributeFilter: ['disabled', 'class']
+    });
+    const timeToExact = TARGET_TIME - Date.now();
+    if (timeToExact > 0) {
+      setTimeout(() => {
+        if (!isDisabled() && !isClicked) {
+          executeClick('정각 안전장치');
+          observer.disconnect();
+        }
+      }, timeToExact);
+    }
+    console.log(' [예열 완료] 2초 전부터 MutationObserver 가동 중...');
+  }
+})();

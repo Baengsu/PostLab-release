@@ -219,6 +219,7 @@ function friendlySource(source) {
     sched: "Book",
     auto: "Rec",
     content: "Page",
+    nol: "NOL",
   };
   return map[source] || "Info";
 }

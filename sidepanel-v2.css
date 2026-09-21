@@ -227,6 +227,23 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.sched-field select {
+  width: 58px;
+  padding: 5px 2px;
+  text-align: center;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  height: 30px;
+}
+
+#nol-yyyy {
+  width: 72px;
+}
+
+#nol-warmup {
+  width: 64px;
+}
+
 #sched-rec-site {
   max-width: 84px;
   align-self: flex-end;
@@ -466,6 +483,10 @@ button.record.is-on {
 
 .g-mid-delay {
   grid-template-columns: 1fr 64px;
+}
+
+.g-nol-target {
+  grid-template-columns: 1fr 88px;
 }
 
 .g-modal-rec {

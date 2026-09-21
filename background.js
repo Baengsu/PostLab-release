@@ -459,6 +459,77 @@ async function stopAutoRecInternal(site) {
   return { ok: true, armed: false, site: s };
 }
 
+const NOL_TAB_URLS = [
+  "*://ticket.interpark.com/*",
+  "*://tickets.interpark.com/*",
+  "*://nol.interpark.com/*",
+  "*://*.interpark.com/*",
+];
+
+async function armNolInternal(payload) {
+  if (stsSync.offsetMs == null) throw new Error("먼저 상단 Sync 하세요");
+
+  const targetString = String(payload.targetString || "").trim();
+  if (!targetString) throw new Error("오픈 시각을 선택하세요");
+
+  const normalized = targetString.includes("T")
+    ? targetString
+    : targetString.replace(" ", "T");
+  const targetMs = new Date(normalized).getTime();
+  if (!Number.isFinite(targetMs)) {
+    throw new Error("시각 형식 오류");
+  }
+
+  const now = serverNowMs();
+  if (now == null) throw new Error("먼저 상단 Sync 하세요");
+  if (targetMs <= now) {
+    throw new Error(`이미 지난 시각 (서버 기준) — ${targetString}`);
+  }
+
+  const config = {
+    targetString,
+    targetMs,
+    warmupMs: Math.max(0, Number(payload.warmupMs) || 2000),
+    selector: String(payload.selector || "div.buttons > button").trim() || "div.buttons > button",
+    disabledClass: String(
+      payload.disabledClass != null ? payload.disabledClass : "_disabled_2p3w6_34"
+    ).trim(),
+  };
+
+  await chrome.storage.local.set({ nolArmed: true, nolConfig: config });
+
+  if (!stsSync.running && stsSync.url) {
+    try {
+      await startServerSync(stsSync.url);
+    } catch {
+      /* offset already present — keep arming */
+    }
+  }
+
+  const waitSec = ((targetMs - now) / 1000).toFixed(1);
+  progressLog(
+    `[NOL] 예약 ON — ${config.targetString} (서버 · ${waitSec}s · 워밍업 ${config.warmupMs}ms)`,
+    "ok",
+    "nol"
+  );
+
+  const tabs = await chrome.tabs.query({ url: NOL_TAB_URLS });
+  for (const tab of tabs) {
+    if (tab.id == null) continue;
+    chrome.tabs.sendMessage(tab.id, { type: "NOL_RESTART" }).catch(() => {});
+  }
+
+  broadcast({ type: "NOL_STATE", armed: true, config });
+  return { ok: true, armed: true, config, tabCount: tabs.length, waitMs: targetMs - now };
+}
+
+async function disarmNolInternal() {
+  await chrome.storage.local.set({ nolArmed: false });
+  progressLog("[NOL] 예약 OFF", "info", "nol");
+  broadcast({ type: "NOL_STATE", armed: false });
+  return { ok: true, armed: false };
+}
+
 async function fireSchedRec() {
   if (!stsSched.armed || stsSched.firing) return;
   stsSched.firing = true;
@@ -1809,6 +1880,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // —— NOL(인터파크) 전용 — ticketlink Rec/Sched와 스토리지·메시지 분리 ——
+  if (message?.type === "NOL_ARM") {
+    armNolInternal(message)
+      .then((result) => sendResponse(result))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "NOL_DISARM") {
+    disarmNolInternal()
+      .then((result) => sendResponse(result))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "NOL_GET_STATE") {
+    chrome.storage.local.get(["nolArmed", "nolConfig"]).then((data) => {
+      sendResponse({
+        ok: true,
+        armed: Boolean(data.nolArmed),
+        config: data.nolConfig || null,
+      });
+    });
+    return true;
+  }
+
+  if (message?.type === "NOL_RESULT") {
+    if (message.ok) {
+      progressLog(`[NOL] 클릭 성공 (${message.reason || "ok"})`, "ok", "nol");
+      chrome.storage.local.set({ nolArmed: false }).then(() => {
+        broadcast({ type: "NOL_STATE", armed: false });
+      });
+    } else {
+      progressLog(message.error || "[NOL] 클릭 실패", "error", "nol");
+    }
+    return false;
+  }
+
   return false;
 });
 
@@ -1818,5 +1927,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   chrome.storage.local.get(["autoRecArmed", "facilityAutoRecArmed"]).then((data) => {
     if (!data.autoRecArmed && !data.facilityAutoRecArmed) return;
     chrome.tabs.sendMessage(tabId, { type: "AUTO_REC_RESTART" }).catch(() => {});
+  });
+});
+
+/** NOL 전용 — interpark 탭만, ticketlink AUTO_REC_RESTART와 무관 */
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status !== "complete") return;
+  if (!tab?.url || !/interpark\.com/i.test(tab.url)) return;
+  chrome.storage.local.get(["nolArmed"]).then((data) => {
+    if (!data.nolArmed) return;
+    chrome.tabs.sendMessage(tabId, { type: "NOL_RESTART" }).catch(() => {});
   });
 });

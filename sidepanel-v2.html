@@ -94,6 +94,10 @@
         <button type="button" class="seg-tab" role="tab" aria-selected="false" data-tab="decord">
           DECORD
         </button>
+        <button type="button" class="seg-tab" role="tab" aria-selected="false" data-tab="nol">
+          NOL
+          <span id="nol-state" class="badge sm">Idle</span>
+        </button>
       </nav>
 
       <main class="panel-scroll" id="panel-scroll">
@@ -202,6 +206,72 @@
             <p id="decord-status" class="status">디코딩 후 상단 [경기 표]에서 확인 · 중복 SID 스킵</p>
           </div>
         </section>
+
+        <section class="tab-panel" data-panel="nol" role="tabpanel" hidden>
+          <div class="block-body">
+            <p class="status" style="margin-top: 0">
+              인터파크/NOL · 상단 Sync 서버 시계 기준 · N초 전 감시 → 1회 클릭
+            </p>
+            <div class="sched-rec-row" id="nol-datetime-row" aria-label="오픈 시각">
+              <label class="sched-field" title="년">
+                <span>yyyy</span>
+                <select id="nol-yyyy"></select>
+              </label>
+              <label class="sched-field" title="월">
+                <span>mo</span>
+                <select id="nol-mo"></select>
+              </label>
+              <label class="sched-field" title="일">
+                <span>dd</span>
+                <select id="nol-dd"></select>
+              </label>
+              <label class="sched-field" title="시">
+                <span>hh</span>
+                <select id="nol-hh"></select>
+              </label>
+              <label class="sched-field" title="분">
+                <span>mi</span>
+                <select id="nol-mi"></select>
+              </label>
+              <label class="sched-field" title="초">
+                <span>ss</span>
+                <select id="nol-ss"></select>
+              </label>
+              <label class="sched-field" title="예열 ms">
+                <span>예열</span>
+                <input
+                  id="nol-warmup"
+                  type="number"
+                  value="2000"
+                  min="0"
+                  step="100"
+                  title="오픈 N ms 전부터 감시"
+                />
+              </label>
+            </div>
+            <div class="field-grid g-mid-delay">
+              <input
+                id="nol-selector"
+                type="text"
+                placeholder="버튼 선택자"
+                value="div.buttons > button"
+                spellcheck="false"
+              />
+              <input
+                id="nol-disabled-class"
+                type="text"
+                placeholder="disabled 클래스"
+                value="_disabled_2p3w6_34"
+                spellcheck="false"
+              />
+            </div>
+            <div class="btn-row">
+              <button id="nol-arm-btn" type="button" class="record">● NOL 예약</button>
+              <button id="nol-clear-btn" type="button" class="ghost compact">해제</button>
+            </div>
+            <p id="nol-status" class="status">상단 Sync → 시각 선택 → 예약 · ticket.interpark.com 탭 필요</p>
+          </div>
+        </section>
       </main>
 
       <footer class="progress-log-wrap" id="progress-log-wrap">
@@ -229,6 +299,7 @@
     </div>
 
     <script src="sidepanel.js"></script>
+    <script src="nol/sidepanel-hook.js"></script>
     <script type="module" src="decord/sidepanel-hook.js"></script>
   </body>
 </html>

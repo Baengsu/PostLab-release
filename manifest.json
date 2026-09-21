@@ -27,6 +27,15 @@
         "https://*.ticketlink.co.kr/*"
       ],
       "js": ["content.js", "content-exp.js"]
+    },
+    {
+      "matches": [
+        "https://ticket.interpark.com/*",
+        "https://tickets.interpark.com/*",
+        "https://nol.interpark.com/*",
+        "https://*.interpark.com/*"
+      ],
+      "js": ["content-nol.js"]
     }
   ],
   "icons": {
